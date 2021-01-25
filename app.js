@@ -1,5 +1,37 @@
 const puppeteer = require('puppeteer');
+const axios = require('axios');
 
+const items = [
+    {
+        name: '',
+        goal: 0,
+        url: ''
+    }
+];
+
+const interval = setInterval(watchPrices, 1 * 1000 * 60);
+
+function watchPrices() {
+    items.forEach(async item => {
+        const offers = await filterLessThanEqual(item.url, item.goal);
+        if(offers.length !== 0) {
+            const cheapest = Math.min(...offers);
+            const message = `${item.name} was found for ${cheapest}zl`;
+            await sendNotification(message, item.url);
+            clearInterval(interval);
+        }
+    });
+}
+
+async function sendNotification(message, url) {
+    await axios.post('', 
+    {
+        token: '',
+        user: '',
+        message: message,
+        url: url
+    });
+}
 
 async function filterLessThanEqual(url, goal) {
     const priceList = await scrapePrices(url);
@@ -24,5 +56,5 @@ async function scrapePrices(url) {
 
     await browser.close();
     return data;
-};
+}
 
