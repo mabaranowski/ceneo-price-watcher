@@ -9,7 +9,7 @@ const items = [
     }
 ];
 
-const interval = setInterval(watchPrices, 1 * 1000 * 60);
+const interval = setInterval(watchPrices, 60 * 1000 * 60);
 
 function watchPrices() {
     items.forEach(async item => {
@@ -18,9 +18,22 @@ function watchPrices() {
             const cheapest = Math.min(...offers);
             const message = `${item.name} was found for ${cheapest}zl`;
             await sendNotification(message, item.url);
-            clearInterval(interval);
+
+            updateItems(item);
         }
     });
+}
+
+function updateItems(item) {
+    const index = items.map(ogItem => { 
+        return ogItem.name; 
+    }).indexOf(item.name);
+
+    items.splice(index, 1);
+
+    if(items.length === 0) {
+        clearInterval(interval);
+    }
 }
 
 async function sendNotification(message, url) {
@@ -42,9 +55,10 @@ async function filterLessThanEqual(url, goal) {
 }
 
 async function scrapePrices(url) {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
+    await page.setUserAgent('5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36');
     await page.goto(url, { waitUntil: 'networkidle2' });    
     await page.click('.show-remaining-offers a').catch(err => {});
     await page.waitForTimeout(2000);
@@ -53,8 +67,7 @@ async function scrapePrices(url) {
         const prices = document.querySelectorAll('.product-price .price');
         return Array.from(prices).map(el => el.innerText);
     });
-
+    
     await browser.close();
     return data;
 }
-
