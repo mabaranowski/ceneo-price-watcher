@@ -19,3 +19,21 @@ $ npm install
 ```
 $ node app.js
 ```
+
+## Lightweight mode
+While deploying this app onto resource restricted system, it is possible to use a lightweight version.  
+It does not download chromium into node_modules, but uses on device version.  
+The timeout on page load is also extended. On Raspberry Pi Zero W it takes around 1 minute to run the browser and open the page.  
+```
+$ npm uninstall puppeteer
+
+$ npm install puppeteer-core
+
+$ node appLite.js
+```
+
+## Tip
+When using pm2 to start a background node process it is reccomended to use **--no-autorestart** flag.
+```
+$ pm2 start appLite.js --no-autorestart
+```
